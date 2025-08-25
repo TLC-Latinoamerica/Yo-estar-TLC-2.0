@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Plantilla con Foto y Texto</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f0f0f0;
+    margin: 0;
+    font-family: sans-serif;
+    padding: 20px;
+  }
+  .contenedor {
+    position: relative;
+    width: 900px;
+    height: 1125px;
+    border: 2px dashed #ccc;
+  }
+  #preview {
+    position: absolute;
+    top: 33.3%;
+    left: 50%;
+    width: 50%;
+    height: 50%;
+    object-fit: cover;
+    object-position: top;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    border-radius: 50%;
+  }
+  .marco {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  #descargar, #subir-foto {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #ff0066;
+    color: white;
+    border: none;
+    border-radius: 4px;
+  }
+  .botones { display: flex; gap: 10px; }
+</style>
+</head>
+<body>
+
+<div class="contenedor" id="drop-area">
+  <img src="" alt="Imagen" id="preview">
+  <img src="Yo-estare-en-TLC-2.0.png" alt="Marco" class="marco">
+  <div id="texto-vivo"></div>
+</div>
+
+<input type="text" id="nombre" placeholder="Escribe tu nombre">
+<input type="file" id="file-input" accept="image/*" style="display: none;">
+
+<div class="botones">
+  <button id="subir-foto">Subir Foto</button>
+  <button id="descargar">Descargar Imagen</button>
+</div>
+
+<script>
+const preview = document.getElementById('preview');
+const nombreInput = document.getElementById('nombre');
+const botonDescargar = document.getElementById('descargar');
+const botonSubir = document.getElementById('subir-foto');
+const fileInput = document.getElementById('file-input');
+
+const marcoImg = new Image();
+marcoImg.src = "Yo-estare-en-TLC-2.0.png";
+marcoImg.crossOrigin = "anonymous"; // evita problemas de CORS
+
+// Subir foto
+botonSubir.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    preview.src = URL.createObjectURL(file);
+  }
+});
+
+// Descargar imagen
+botonDescargar.addEventListener('click', async () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 900;
+  canvas.height = 1125;
+  const ctx = canvas.getContext('2d');
+
+  try {
+    // Fondo blanco
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Foto en círculo
+    if (preview.src) {
+      const foto = new Image();
+      foto.src = preview.src;
+      foto.crossOrigin = "anonymous";
+
+      await new Promise((resolve) => {
+        foto.onload = resolve;
+        foto.onerror = resolve;
+      });
+
+      const fotoSize = 0.5 * canvas.width;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height * 0.33, fotoSize / 2, 0, Math.PI * 2);
+      ctx.clip();
+
+      ctx.drawImage(
+        foto,
+        0, 0, foto.width, foto.height,
+        canvas.width / 2 - fotoSize / 2, canvas.height * 0.33 - fotoSize / 2,
+        fotoSize, fotoSize
+      );
+      ctx.restore();
+    }
+
+    // Esperar a que el marco cargue antes de dibujar
+    await new Promise((resolve) => {
+      if (marcoImg.complete) return resolve();
+      marcoImg.onload = resolve;
+      marcoImg.onerror = resolve;
+    });
+    ctx.drawImage(marcoImg, 0, 0, canvas.width, canvas.height);
+
+    // Texto
+    ctx.font = "bold 40px sans-serif";
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+    ctx.fillText(nombreInput.value || "", canvas.width / 2, canvas.height * 0.9);
+
+    // Descargar
+    const link = document.createElement('a');
+    link.download = `bienvenido-${nombreInput.value || 'anonimo'}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error al generar la imagen.");
+  }
+});
+</script>
+</body>
+</html>
