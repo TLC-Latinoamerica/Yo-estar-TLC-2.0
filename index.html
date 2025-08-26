@@ -27,37 +27,42 @@
     display: block;
   }
   .controles {
-    margin-top: 20px;
+    margin-top: 25px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* espacio entre botones */
+    align-items: center;
   }
   input[type="file"] {
     display: inline-block;
-    padding: 20px 30px; /* más grande */
+    padding: 22px 32px; /* más grande */
     background: #ff7bac;
     color: white;
     border: none;
-    border-radius: 16px;
+    border-radius: 18px;
     cursor: pointer;
-    font-size: 20px; /* más legible */
+    font-size: 24px; /* más legible */
   }
   input[type="file"]::file-selector-button {
     background: #ff4b7d;
     border: none;
     color: white;
-    padding: 20px 30px; /* más grande */
-    border-radius: 16px;
-    font-size: 20px;
+    padding: 22px 32px; /* más grande */
+    border-radius: 18px;
+    font-size: 24px;
     cursor: pointer;
   }
   button {
     margin-left: 10px;
-    padding: 20px 30px; /* más grande */
+    padding: 22px 32px; /* más grande */
     border: none;
-    border-radius: 16px;
+    border-radius: 18px;
     cursor: pointer;
-    font-size: 20px; /* más legible */
+    font-size: 24px; /* más legible */
     background: #ff4b7d;
     color: white;
+    width: 220px; /* mismo ancho para ambos */
   }
 </style>
 </head>
@@ -68,7 +73,6 @@
 </div>
 
 <div class="controles">
-  <label for="upload">📷 Subir foto</label>
   <input type="file" id="upload" accept="image/*">
   <button id="download">⬇️ Descargar</button>
 </div>
