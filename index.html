@@ -12,6 +12,7 @@
     margin: 0;
     padding: 20px;
     font-family: sans-serif;
+    flex-direction: column;
   }
   .contenedor {
     position: relative;
@@ -26,18 +27,34 @@
     display: block;
   }
   .controles {
-    margin-top: 15px;
+    margin-top: 20px;
     text-align: center;
   }
-  input[type="file"], button {
-    margin: 5px;
+  input[type="file"] {
+    display: inline-block;
     padding: 10px 15px;
+    background: #ff7bac;
+    color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     font-size: 14px;
   }
+  input[type="file"]::file-selector-button {
+    background: #ff4b7d;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
   button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
     background: #ff4b7d;
     color: white;
   }
@@ -45,15 +62,14 @@
 </head>
 <body>
 
-<div>
-  <div class="contenedor">
-    <canvas id="canvas" width="900" height="1125"></canvas>
-  </div>
+<div class="contenedor">
+  <canvas id="canvas" width="900" height="1125"></canvas>
+</div>
 
-  <div class="controles">
-    <input type="file" id="upload" accept="image/*">
-    <button id="download">Descargar</button>
-  </div>
+<div class="controles">
+  <label for="upload">📷 Subir foto</label>
+  <input type="file" id="upload" accept="image/*">
+  <button id="download">⬇️ Descargar</button>
 </div>
 
 <script>
@@ -96,7 +112,7 @@
       // círculo de recorte
       const cx = 450;  // centro en x
       const cy = 319;  // centro en y
-      const radio = 222;
+      const radio = 220;
 
       ctx.save();
       ctx.beginPath();
