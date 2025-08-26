@@ -2,145 +2,132 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Plantilla con Foto</title>
+<title>Yo estaré en TLC 2.0</title>
 <style>
   body {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
     background: #f0f0f0;
     margin: 0;
-    font-family: sans-serif;
     padding: 20px;
+    font-family: sans-serif;
   }
   .contenedor {
     position: relative;
-    width: 900px;
-    height: 1125px;
-    border: 2px dashed #ccc;
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: 900 / 1125;
+    background: url("Yo-estare-en-TLC-2.0.png") no-repeat center/contain;
   }
-  #preview {
-    position: absolute;
-    top: 33.3%;
-    left: 50%;
-    width: 50%;
-    height: 50%;
-    object-fit: cover;
-    object-position: top;
-    transform: translate(-50%, -50%);
-    z-index: 0;
-    border-radius: 50%;
-  }
-  .marco {
-    position: absolute;
+  #canvas {
     width: 100%;
     height: 100%;
-    z-index: 1;
-    pointer-events: none;
+    display: block;
   }
-  #descargar, #subir-foto {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background: #ff0066;
-    color: white;
+  .controles {
+    margin-top: 15px;
+    text-align: center;
+  }
+  input[type="file"], button {
+    margin: 5px;
+    padding: 10px 15px;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
   }
-  .botones { display: flex; gap: 10px; }
+  button {
+    background: #ff4b7d;
+    color: white;
+  }
 </style>
 </head>
 <body>
 
-<div class="contenedor" id="drop-area">
-  <img src="" alt="Imagen" id="preview">
-  <img src="Yo-estare-en-TLC-2.0.png" alt="Marco" class="marco">
-</div>
+<div>
+  <div class="contenedor">
+    <canvas id="canvas" width="900" height="1125"></canvas>
+  </div>
 
-<input type="file" id="file-input" accept="image/*" style="display: none;">
-
-<div class="botones">
-  <button id="subir-foto">Subir Foto</button>
-  <button id="descargar">Descargar Imagen</button>
+  <div class="controles">
+    <input type="file" id="upload" accept="image/*">
+    <button id="download">Descargar</button>
+  </div>
 </div>
 
 <script>
-const preview = document.getElementById('preview');
-const botonDescargar = document.getElementById('descargar');
-const botonSubir = document.getElementById('subir-foto');
-const fileInput = document.getElementById('file-input');
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const plantilla = new Image();
+  plantilla.src = "Yo-estare-en-TLC-2.0.png";
 
-const marcoImg = new Image();
-marcoImg.src = "Yo-estare-en-TLC-2.0.png";
-marcoImg.crossOrigin = "anonymous"; // evita problemas de CORS
+  const upload = document.getElementById("upload");
+  const download = document.getElementById("download");
 
-// Subir foto
-botonSubir.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file && file.type.startsWith('image/')) {
-    preview.src = URL.createObjectURL(file);
-  }
-});
+  let foto = null;
 
-// Descargar imagen
-botonDescargar.addEventListener('click', async () => {
-  const canvas = document.createElement('canvas');
-  canvas.width = 900;
-  canvas.height = 1125;
-  const ctx = canvas.getContext('2d');
+  // dibuja plantilla base
+  plantilla.onload = () => {
+    ctx.drawImage(plantilla, 0, 0, canvas.width, canvas.height);
+  };
 
-  try {
-    // Fondo blanco
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  upload.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      foto = new Image();
+      foto.onload = () => {
+        dibujar();
+      };
+      foto.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 
-    // Foto en círculo
-    if (preview.src) {
-      const foto = new Image();
-      foto.src = preview.src;
-      foto.crossOrigin = "anonymous";
+  function dibujar() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      await new Promise((resolve) => {
-        foto.onload = resolve;
-        foto.onerror = resolve;
-      });
+    // plantilla fondo
+    ctx.drawImage(plantilla, 0, 0, canvas.width, canvas.height);
 
-      const fotoSize = 0.5 * canvas.width;
+    if (foto) {
+      // círculo de recorte
+      const cx = 450;  // centro en x
+      const cy = 319;  // centro en y
+      const radio = 222;
+
       ctx.save();
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height * 0.33, fotoSize / 2, 0, Math.PI * 2);
+      ctx.arc(cx, cy, radio, 0, Math.PI * 2, true);
+      ctx.closePath();
       ctx.clip();
 
-      ctx.drawImage(
-        foto,
-        0, 0, foto.width, foto.height,
-        canvas.width / 2 - fotoSize / 2, canvas.height * 0.33 - fotoSize / 2,
-        fotoSize, fotoSize
-      );
+      // Escalar la foto al ancho del círculo
+      const escala = (radio * 2) / foto.width;
+      const newW = foto.width * escala;
+      const newH = foto.height * escala;
+
+      // Alinear desde arriba
+      const x = cx - newW / 2;
+      const y = cy - radio;
+
+      ctx.drawImage(foto, x, y, newW, newH);
       ctx.restore();
     }
 
-    // Esperar a que el marco cargue antes de dibujar
-    await new Promise((resolve) => {
-      if (marcoImg.complete) return resolve();
-      marcoImg.onload = resolve;
-      marcoImg.onerror = resolve;
-    });
-    ctx.drawImage(marcoImg, 0, 0, canvas.width, canvas.height);
-
-    // Descargar
-    const link = document.createElement('a');
-    link.download = `bienvenido.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Error al generar la imagen.");
+    // plantilla encima (para respetar borde del marco)
+    ctx.drawImage(plantilla, 0, 0, canvas.width, canvas.height);
   }
-});
+
+  download.addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = "Yo-estare-en-TLC-2.0.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
 </script>
+
 </body>
 </html>
